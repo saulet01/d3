@@ -1,23 +1,19 @@
-let changeTitle = () => {
-  let valuOf = d3.select("#inp-change").property("value");
-  d3.select("h5").text(valuOf);
+let container = d3.select(".wrap")
+
+d3.csv("data.csv").then(function(data){
+  data.sort((a, b) => {
+    return d3.ascending(a.Name, b.Name)
+  })
+  let filteredData = data.filter( i => i.Age > 25 )
+  showData(filteredData)
+})
+
+function showData(data){
+  for(let i of data){
+    write(i.Name + ", " + i.Position + ", "+i.Age)
+  }
 }
 
-let changePar = () => {
-  let valuOf = d3.select("#inp-change").node().value;
-  d3.select("#saken").text(valuOf);
-}
-
-let changeAll = () => {
-  let valuOf = d3.select("#inp-change").property("value");
-  d3.select("ul").append("li").attr("class", "list-group-item").text(valuOf);
-}
-
-let removeActive = () => {
-  d3.select("li:last-child").remove();
-}
-
-let showBarcelona = () => {
-  d3.select(".card-img-top").attr("src", "https://ob9a8415roh4djoj110c31a1-wpengine.netdna-ssl.com/wp-content/uploads/2013/02/barcelona-aerial-view.jpg");
-  d3.selectAll(".jjj").style("display", "none");
+const write = (text) => {
+  container.append("div").text(text)
 }
