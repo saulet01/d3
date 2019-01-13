@@ -4,7 +4,7 @@ d3.csv("data.csv").then(dataLoaded)
 
 function dataLoaded(data){
   showData(data)
-  showAge(data)
+  statistics(data)
 }
 
 function showData(data){
@@ -13,14 +13,30 @@ function showData(data){
   }
 }
 
-function showAge(data){
-  let total = data.reduce( (accum, i) => {
-    let age = parseInt(i.Age)
-    return accum + age
-  }, 0)
-  container.append("h3").text(total)
+function statistics(data){
+  let total = d3.sum(data, (i) => {
+    return parseInt(i.Age)
+  })
+  total = `The sum is ${total}`
+  header(total)
+
+  let mean = d3.mean(data, (i) => {
+    return parseInt(i.Age)
+  })
+  mean = `The Mean is ${mean}`
+  header(mean)
+
+  let extent = d3.extent(data, (i) => {
+    return parseInt(i.Age)
+  })
+  extent = `The maximum and minimum is ${extent}`
+  header(extent)
 }
 
 const write = (text) => {
   container.append("div").text(text)
+}
+
+const header = (text) => {
+  container.append("h3").text(text)
 }
