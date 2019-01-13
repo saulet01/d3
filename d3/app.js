@@ -1,17 +1,24 @@
 let container = d3.select(".wrap")
 
-d3.csv("data.csv").then(function(data){
-  data.sort((a, b) => {
-    return d3.ascending(a.Name, b.Name)
-  })
-  let filteredData = data.filter( i => i.Age > 25 )
-  showData(filteredData)
-})
+d3.csv("data.csv").then(dataLoaded)
+
+function dataLoaded(data){
+  showData(data)
+  showAge(data)
+}
 
 function showData(data){
   for(let i of data){
     write(i.Name + ", " + i.Position + ", "+i.Age)
   }
+}
+
+function showAge(data){
+  let total = data.reduce( (accum, i) => {
+    let age = parseInt(i.Age)
+    return accum + age
+  }, 0)
+  container.append("h3").text(total)
 }
 
 const write = (text) => {
