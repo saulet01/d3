@@ -1,27 +1,25 @@
 let container = d3.select("#wrap")
-let clients = [{
-  Name: "Client0"
-}]
-let count = 1;
+d3.csv("data.csv").then(showData)
 
-function addClient(){
-  clients.push({
-    Name: "Client" + count
-  })
-  count = count + 1
-  showData(clients)
-}
+const KG_PER_POUND = 0.45
+const METER_PER_INCH = 0.0254
 
-function removeClient(){
-  clients = clients.slice(0, -1) //not show the last one
-  count = count - 1
-  showData(clients)
+function write(text){
+  container.append("div").text(text)
 }
 
 function showData(clients){
-  let join = container.selectAll("div").data(clients);
-  join.enter().append("div").text(d => d.Name + " - New")
-  join.exit().remove()
-  join.text(d => d.Name + ": Updated")
+  let max = d3.max(clients, d => d.Weight)
+  let scale = d3.scaleLinear()
+  .range([0, 300])
+  .domain([0, max])
+  let join = container.selectAll("div").data(clients)
+
+  join.enter()
+  .append("div")
+  .text( d => d.Name + ": " + scale(parseInt(d.Weight)))
+  .style("width", d => scale(d.Weight) + 'px')
+  .style("background-color", "blue")
+  .style("margin", "5px")
+  .style("color", "white")
 }
-showData(clients)
