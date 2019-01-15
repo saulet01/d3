@@ -1,4 +1,4 @@
-let container = d3.select("#wrap")
+let container = d3.select("#body")
 d3.csv("data.csv").then(showData)
 
 function showData(clients){
@@ -14,4 +14,12 @@ function showData(clients){
   .attr("width", d => widthScale(d.Weight))
   .attr("height", positionScale.bandwidth())
   .attr("y", d => positionScale(d.Name))
+
+  let xAxis = d3.axisBottom(widthScale).ticks(5).tickFormat( d => d + " kg")
+  d3.select("#xAxis").attr("transform","translate(50, 200)")
+  .call(xAxis)
+
+  let yAxis = d3.axisLeft(positionScale)
+  d3.select("#yAxis").attr("transform", "translate(50, 0)")
+  .call(yAxis)
 }
