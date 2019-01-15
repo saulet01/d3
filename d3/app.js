@@ -1,25 +1,17 @@
 let container = d3.select("#wrap")
 d3.csv("data.csv").then(showData)
 
-const KG_PER_POUND = 0.45
-const METER_PER_INCH = 0.0254
-
-function write(text){
-  container.append("div").text(text)
-}
-
 function showData(clients){
   let max = d3.max(clients, d => d.Weight)
-  let scale = d3.scaleLinear()
-  .range([0, 300])
-  .domain([0, max])
-  let join = container.selectAll("div").data(clients)
+  let widthScale = d3.scaleLinear().range([0, 300]).domain([0, max])
 
+  let positionScale = d3.scaleBand().range([0,200]).domain(clients.map( d => d.Name)).padding(0.3)
+
+  let join = container.selectAll("rect").data(clients)
   join.enter()
-  .append("div")
-  .text( d => d.Name + ": " + scale(parseInt(d.Weight)))
-  .style("width", d => scale(d.Weight) + 'px')
-  .style("background-color", "blue")
-  .style("margin", "5px")
-  .style("color", "white")
+  .append("rect")
+  .attr("fill", "blue")
+  .attr("width", d => widthScale(d.Weight))
+  .attr("height", positionScale.bandwidth())
+  .attr("y", d => positionScale(d.Name))
 }
