@@ -1,25 +1,25 @@
 let container = d3.select("#body")
-d3.csv("data.csv").then(showData)
+d3.csv("data2.csv").then(showData)
 
-function showData(clients){
-  let max = d3.max(clients, d => d.Weight)
-  let widthScale = d3.scaleLinear().range([0, 300]).domain([0, max])
+function showData(data){
+  let bodyHeight = 200
+  let bodyWidth = 400
 
-  let positionScale = d3.scaleBand().range([0,200]).domain(clients.map( d => d.Name)).padding(0.3)
+  data = data.map(d => ({
+      date: new Date(d.date),  //Convert string into date
+      price: +d.price //Convert string into number
+  }))
 
-  let join = container.selectAll("rect").data(clients)
-  join.enter()
-  .append("rect")
-  .attr("fill", "blue")
-  .attr("width", d => widthScale(d.Weight))
-  .attr("height", positionScale.bandwidth())
-  .attr("y", d => positionScale(d.Name))
+  let maxValue = d3.max(data, d => d.price)
 
-  let xAxis = d3.axisBottom(widthScale).ticks(5).tickFormat( d => d + " kg")
-  d3.select("#xAxis").attr("transform","translate(50, 200)")
-  .call(xAxis)
+  let yScale = d3.scaleLinear().domain([0, maxValue]).range([bodyHeight, 0])
+  container.append("g").call(d3.axisLeft(yScale))
 
-  let yAxis = d3.axisLeft(positionScale)
-  d3.select("#yAxis").attr("transform", "translate(50, 0)")
-  .call(yAxis)
+  let xCale = d3.scaleTime().domain(d3.extent(data, d => d.date)).range([0, bodyWidth])
+  container.append("g")
+  .attr("transform","translate(0, "+bodyHeight+")")
+  .call(d3.axisBottom(xCale).tickFormat(d3.timeFormat("%b")))  //filter to months
+
+  valueline = d3.line().x(d => xCale(d.date)).y(d => yScale(d.price)).defined(d => !!d.price)  //get rid of null elements
+  container.append("path").datum(data).attr("d", valueline).attr("fill", "none").attr("stroke", "blue")
 }
