@@ -1,25 +1,20 @@
 let container = d3.select("#body")
-d3.csv("data2.csv").then(showData)
+d3.csv("sales.csv").then(showData)
 
 function showData(data){
   let bodyHeight = 200
   let bodyWidth = 400
 
   data = data.map(d => ({
-      date: new Date(d.date),  //Convert string into date
-      price: +d.price //Convert string into number
+      country: d.country,
+      sales: +d.sales
   }))
 
-  let maxValue = d3.max(data, d => d.price)
+  let pie = d3.pie().value(d => d.sales)
+  let colorScale = d3.scaleOrdinal().range(d3.schemeCategory10).domain(data.map(d => d.country)) //create color scheme for each country
 
-  let yScale = d3.scaleLinear().domain([0, maxValue]).range([bodyHeight, 0])
-  container.append("g").call(d3.axisLeft(yScale))
+  let arc = d3.arc().outerRadius(bodyHeight/2).innerRadius(50)
 
-  let xCale = d3.scaleTime().domain(d3.extent(data, d => d.date)).range([0, bodyWidth])
-  container.append("g")
-  .attr("transform","translate(0, "+bodyHeight+")")
-  .call(d3.axisBottom(xCale).tickFormat(d3.timeFormat("%b")))  //filter to months
-
-  valueline = d3.line().x(d => xCale(d.date)).y(d => yScale(d.price)).defined(d => !!d.price)  //get rid of null elements
-  container.append("path").datum(data).attr("d", valueline).attr("fill", "none").attr("stroke", "blue")
+  let g = container.selectAll(".arc").data(pie(data)).enter().append("g")
+  g.append("path").attr("d", arc).attr("fill", d => {return colorScale(d.data.country)})
 }
