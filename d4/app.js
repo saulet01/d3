@@ -1,16 +1,45 @@
 let container = d3.select("#body")
-d3.json("countries.geo.json").then(showData)
+Promise.all([
+    d3.csv("dataset.csv"),
+    d3.json("countries.geo.json")
+]).then(showData)
 
-function showData(mapInfo){
-  let bodyHeight = 400
-  let bodyWidth = 400
+function showData(datasources) {
+    let mapInfo = datasources[1]
+    let data = datasources[0]
+    console.log(data)
 
-  let projection = d3.geoNaturalEarth1().scale(80).translate([bodyWidth/2,bodyHeight/2])
-  let path = d3.geoPath().projection(projection)
+    let dataIndex = {}
+    for (let c of data){
+      let country = c.Country;
+      dataIndex[country] = +c.Magnitude
+    }
 
-  container.selectAll("path").data(mapInfo.features).enter().append("path")
-  .attr("d", d => path(d))
-  .attr("stroke", "black")
-  .attr("fill", "none")
+    mapInfo.features = mapInfo.features.map(d => {
+      let country = d.properties.name;
+      let magnitude = dataIndex[country]
+      d.properties.Magnitude = magnitude;
+      return d;
+    })
 
+    let maxEarthquake = d3.max(mapInfo.features, d => d.properties.Magnitude)
+    let medianEarthquake = d3.median(mapInfo.features, d => d.properties.Magnitude)
+    let cScale = d3.scaleLinear().domain([0, medianEarthquake, maxEarthquake]).range(["white", "orange", "red"])
+
+    let bodyHeight = 400
+    let bodyWidth = 400
+
+    var projection =
+        d3.geoMercator()
+            .scale(80)
+            .translate([bodyWidth / 2, bodyHeight / 2])
+
+    var path = d3.geoPath()
+        .projection(projection);
+
+    container.selectAll("path").data(mapInfo.features)
+        .enter().append("path")
+        .attr("d", d => path(d))
+        .attr("stroke", "black")
+        .attr("fill", d => d.properties.Magnitude ? cScale(d.properties.Magnitude) : "white")
 }
