@@ -1,20 +1,16 @@
 let container = d3.select("#body")
-d3.csv("sales.csv").then(showData)
+d3.json("countries.geo.json").then(showData)
 
-function showData(data){
-  let bodyHeight = 200
+function showData(mapInfo){
+  let bodyHeight = 400
   let bodyWidth = 400
 
-  data = data.map(d => ({
-      country: d.country,
-      sales: +d.sales
-  }))
+  let projection = d3.geoNaturalEarth1().scale(80).translate([bodyWidth/2,bodyHeight/2])
+  let path = d3.geoPath().projection(projection)
 
-  let pie = d3.pie().value(d => d.sales)
-  let colorScale = d3.scaleOrdinal().range(d3.schemeCategory10).domain(data.map(d => d.country)) //create color scheme for each country
+  container.selectAll("path").data(mapInfo.features).enter().append("path")
+  .attr("d", d => path(d))
+  .attr("stroke", "black")
+  .attr("fill", "none")
 
-  let arc = d3.arc().outerRadius(bodyHeight/2).innerRadius(50)
-
-  let g = container.selectAll(".arc").data(pie(data)).enter().append("g")
-  g.append("path").attr("d", arc).attr("fill", d => {return colorScale(d.data.country)})
 }
