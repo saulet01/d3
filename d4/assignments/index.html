@@ -85,7 +85,9 @@
       drawMap(store.geoJSON)
 
       let airports = groupByAirport(store.routes);
-      drawAirports(airports);
+      //drawAirports(airports)
+
+      drawRoutes("24") // <- add this line
   }
 
   loadData().then(showData);
@@ -151,7 +153,20 @@
         .attr("y", (d) => yScale(d.AirlineName))
         .attr("width", (d) => xScale(d.Count))
         .attr("fill", "#2a5599")
-  }
+        .on("mouseenter", function(d) { // <- this is the new code
+          drawRoutes(d.AirlineID);
+          d3.select(this).attr("fill", "#992a5b");
+          //TODO: call the drawRoutes function passing the AirlineID id 'd'
+          //TODO: change the fill color of the bar to "#992a5b" as a way to highlight the bar. Hint: use d3.select(this)
+        })
+        .on("mouseleave", function(d){
+          drawRoutes(null)
+          d3.select(this).attr("fill", "#2a559");
+        })
+        //TODO: Add another listener, this time for mouseleave
+        //TODO: In this listener, call drawRoutes(null), this will cause the function to remove all lines in the chart since there is no airline withe AirlineID == null.
+        //TODO: change the fill color of the bar back to "#2a5599"
+          }
 
   function drawAxesAirlinesChart(airlines, scales, config){
     let {xScale, yScale} = scales
@@ -269,6 +284,34 @@
     //      - set the x and y position of the circle using the projection to convert longitude and latitude to x and y porision.
     //      - Set the fill color of the circle to  "#2a5599"
   }
+
+    function drawRoutes(airlineID) {
+    let routes = store.routes; //TODO: get the routes from store
+    let projection = store.mapProjection;//TODO: get the projection from the store
+    let container = d3.select("#Map");//TODO: select the svg with id "Map" (our map container)
+    let selectedRoutes = routes.filter( d => d.AirlineID == airlineID)//TODO: filter the routes to keep only the routes which AirlineID is equal to the parameter airlineID received by the function
+
+    let bindedData = container.selectAll("line")
+        .data(selectedRoutes, d => d.ID) //This seconf parameter tells D3 what to use to identify the routes, this hepls D3 to correctly find which routes have been added or removed.
+
+    bindedData.enter() //TODO: Use the .enter selector to append a line for each new route.
+              .append("line")
+              //TODO: for each line set the start of the line (x1 and y1) to be the position of the source airport (SourceLongitude and SourceLatitude) Hint: you can use projection to convert longitude and latitude to x and y.
+              .attr("x1", d => projection([+d.SourceLongitude, +d.SourceLatitude])[0])
+              .attr("y1", d => projection([+d.SourceLongitude, +d.SourceLatitude])[1])
+              //TODO: for each line set the end of the line (x2 and y2) to be the position of the source airport (DestLongitude and DestLongitude)
+              .attr("x2", d => projection([+d.DestLongitude, +d.DestLatitude])[0])
+              .attr("y2", d => projection([+d.DestLongitude, +d.DestLatitude])[1])
+              .attr("stroke", "#992a2a")
+              .attr("opacity", 0.1)
+
+    bindedData.exit().remove();
+
+    //TODO: set the color of the stroke of the line to "#992a2a"
+    //TODO: set the opacity to 0.1
+
+    //TODO: use exit function over bindedData to remove any routes that does not satisfy the filter.
+}
 
   </script>
  </html>
